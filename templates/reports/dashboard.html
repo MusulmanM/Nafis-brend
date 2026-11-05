@@ -1,0 +1,122 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Bosh sahifa{% endblock %}
+{% block page_title %}Bosh sahifa{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">Bugun, {{ today|date:"j E, l" }}</div>{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'orders:create' %}"><i class="bi bi-plus-lg"></i> Yangi buyurtma</a>
+{% endblock %}
+{% block content %}
+{% if overdue or unassigned %}
+<div class="d-flex flex-column gap-2 mb-4">
+  {% if overdue %}
+    <a class="alert alert-warning mb-0 py-2 d-flex justify-content-between" href="{% url 'orders:list' %}?overdue=1">
+      <span><i class="bi bi-clock-history me-2"></i>{{ overdue }} ta kechikkan buyurtma (o'tgan kunlardan qolgan)</span><i class="bi bi-chevron-right"></i>
+    </a>
+  {% endif %}
+  {% if unassigned %}
+    <a class="alert alert-light border mb-0 py-2 d-flex justify-content-between text-reset" href="{% url 'orders:list' %}?driver=none&status=new">
+      <span><i class="bi bi-person-dash me-2"></i>{{ unassigned }} ta buyurtmaga yetkazuvchi biriktirilmagan</span><i class="bi bi-chevron-right"></i>
+    </a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% with today_iso=today|date:"Y-m-d" %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4">
+    <a class="stat-link" href="{% url 'orders:list' %}?date={{ today_iso }}"><div class="card stat">
+      <div class="stat-label">Bugungi buyurtmalar</div>
+      <div class="stat-value">{{ counts.total }}</div>
+    </div></a>
+  </div>
+  <div class="col-6 col-md-4">
+    <a class="stat-link" href="{% url 'orders:list' %}?date={{ today_iso }}&status=delivered"><div class="card stat">
+      <div class="stat-label">Yetkazildi</div>
+      <div class="stat-value">{{ counts.delivered }}</div>
+      {% if counts.failed %}<div class="stat-note">{{ counts.failed }} tasi yetkazib bo'lmadi</div>{% endif %}
+    </div></a>
+  </div>
+  <div class="col-6 col-md-4">
+    <a class="stat-link" href="{% url 'orders:list' %}?date={{ today_iso }}"><div class="card stat">
+      <div class="stat-label">Kutilmoqda</div>
+      <div class="stat-value">{{ counts.pending }}</div>
+    </div></a>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="card stat">
+      <div class="stat-label">Bugungi tushum</div>
+      <div class="stat-value">{{ revenue_today|som_stat }}</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <a class="stat-link" href="{% url 'customers:debtors' %}"><div class="card stat">
+      <div class="stat-label">Umumiy qarz</div>
+      <div class="stat-value">{{ balances.total_debt|som_stat }}</div>
+      <div class="stat-note">{{ balances.debtors }} ta qarzdor</div>
+    </div></a>
+  </div>
+  <div class="col-6 col-md-4">
+    <a class="stat-link" href="{% url 'customers:bottles' %}"><div class="card stat">
+      <div class="stat-label">Mijozlardagi butillar</div>
+      <div class="stat-value">{{ balances.total_bottles|num }}</div>
+      {% if balances.open_pickups %}<div class="stat-note">{{ balances.open_pickups }} ta olib kelish topshirig'i ochiq</div>{% endif %}
+    </div></a>
+  </div>
+</div>
+{% endwith %}
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card">
+      <div class="card-header">
+        <span>Oxirgi 7 kunlik tushum</span>
+        <span class="small text-muted-2 num">jami {{ revenue_week|som }}</span>
+      </div>
+      <div class="card-body">
+        <div class="chart-box"><canvas id="revenue-chart" role="img" aria-label="Oxirgi 7 kunlik tushum ustunli grafigi"></canvas></div>
+        <details class="mt-3 small">
+          <summary class="text-muted-2">Jadval ko'rinishi</summary>
+          <table class="table table-sm mt-2">
+            <tbody>
+              {% for day, amount in week %}
+              <tr><td>{{ day|date:"d.m.Y, l" }}</td><td class="text-end num">{{ amount|som }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </details>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card">
+      <div class="card-header"><span>Yetkazuvchilar bugun</span><a class="small" href="{% url 'accounts:driver_list' %}">Barchasi</a></div>
+      {% for d in drivers %}
+        <a class="list-row" href="{% url 'accounts:driver_detail' d.pk %}">
+          <div class="main">
+            <div class="title text-truncate">{{ d }}</div>
+            <div class="meta">{{ d.delivered }} / {{ d.total }} yetkazildi{% if d.pending %} · {{ d.pending }} ta qoldi{% endif %}</div>
+          </div>
+          <div class="side num small">{{ d.collected|som }}</div>
+        </a>
+      {% empty %}
+        <div class="empty"><i class="bi bi-truck"></i><a href="{% url 'accounts:driver_create' %}">Yetkazuvchi qo'shing</a></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{{ chart|json_script:"revenue-data" }}
+{% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+<script>
+  // 7 kunlik tushum grafigi
+  (function () {
+    const data = JSON.parse(document.getElementById("revenue-data").textContent);
+    AppCharts.columns(document.getElementById("revenue-chart"), data.labels, data.values);
+  })();
+</script>
+{% endblock %}

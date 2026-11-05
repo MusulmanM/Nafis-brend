@@ -1,0 +1,14 @@
+{% extends "layouts/driver.html" %}
+{% block title %}Olib kelib bo'lmadi{% endblock %}
+{% block page_title %}Butillarni olib kelib bo'lmadi{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">{{ pickup.customer.name }}</div>{% endblock %}
+{% block content %}
+<form class="card" method="post">
+  {% csrf_token %}
+  <div class="card-body">{% include "driver/_fail_fields.html" %}</div>
+  <div class="card-body border-top d-grid gap-2">
+    <button class="btn btn-danger btn-big" type="submit">Saqlash</button>
+    <a class="btn btn-light" href="{% url 'driver:today' %}">Orqaga</a>
+  </div>
+</form>
+{% endblock %}

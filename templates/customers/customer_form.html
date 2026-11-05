@@ -1,0 +1,47 @@
+{% extends "layouts/boss.html" %}
+{% block title %}{% if is_new %}Yangi mijoz{% else %}Tahrirlash{% endif %}{% endblock %}
+{% block page_title %}{% if is_new %}Yangi mijoz{% else %}{{ customer.name }} — tahrirlash{% endif %}{% endblock %}
+{% block content %}
+<div class="row"><div class="col-lg-8 col-xl-7">
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    <div class="card mb-3"><div class="card-body p-4">
+      <div class="section-title">Asosiy</div>
+      {% include "partials/field.html" with field=form.name %}
+      <div class="row">
+        <div class="col-sm-6">{% include "partials/field.html" with field=form.phone %}</div>
+        <div class="col-sm-6">{% include "partials/field.html" with field=form.phone2 %}</div>
+      </div>
+      {% include "partials/field.html" with field=form.customer_type %}
+    </div></div>
+
+    <div class="card mb-3"><div class="card-body p-4">
+      <div class="section-title">Manzil</div>
+      {% include "partials/field.html" with field=form.address %}
+      {% include "partials/field.html" with field=form.landmark %}
+      {% include "partials/field.html" with field=form.map_url %}
+      <div class="row">
+        <div class="col-6">{% include "partials/field.html" with field=form.latitude %}</div>
+        <div class="col-6">{% include "partials/field.html" with field=form.longitude %}</div>
+      </div>
+      {% include "partials/field.html" with field=form.note %}
+    </div></div>
+
+    {% if is_new %}
+    <div class="card mb-3"><div class="card-body p-4">
+      <div class="section-title">Boshlang'ich balans (ixtiyoriy)</div>
+      <div class="row">
+        <div class="col-sm-6">{% include "partials/field.html" with field=form.debt %}</div>
+        <div class="col-sm-6">{% include "partials/field.html" with field=form.bottles %}</div>
+      </div>
+    </div></div>
+    {% endif %}
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Saqlash</button>
+      <a class="btn btn-light" href="{% if is_new %}{% url 'customers:list' %}{% else %}{% url 'customers:detail' customer.pk %}{% endif %}">Bekor qilish</a>
+    </div>
+  </form>
+</div></div>
+{% endblock %}

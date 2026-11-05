@@ -1,0 +1,42 @@
+{% load formatting %}
+{% comment %}"Yetkazib berdim" formasi maydonlari (modal va alohida sahifada bir xil).{% endcomment %}
+{% include "partials/form_errors.html" with form=form %}
+<div class="mb-3">
+  <div class="form-label">{{ form.payment_type.label }}</div>
+  <div class="pay-types" data-pay-types>
+    {% for radio in form.payment_type %}
+      <input type="radio" class="btn-check" name="{{ radio.data.name }}" id="{{ radio.id_for_label }}" value="{{ radio.data.value }}"{% if radio.data.selected %} checked{% endif %}>
+      <label class="btn btn-light" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+    {% endfor %}
+  </div>
+  {% for error in form.payment_type.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+</div>
+
+<div class="mb-3" data-paid-block>
+  <label class="form-label" for="{{ form.paid_amount.id_for_label }}">{{ form.paid_amount.label }}</label>
+  {{ form.paid_amount }}
+  {% for error in form.paid_amount.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+  <div class="d-flex flex-wrap gap-2 mt-2">
+    <button type="button" class="chip" data-fill="{{ order.total_amount }}">Buyurtma: {{ order.total_amount|som }}</button>
+    {% if order.customer.debt %}
+      <button type="button" class="chip" data-fill="{{ form.max_paid }}">Qarz bilan: {{ form.max_paid|som }}</button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="mb-2">
+  <label class="form-label" for="{{ form.returned_bottles.id_for_label }}">{{ form.returned_bottles.label }}</label>
+  <div class="qty qty-lg">
+    <button class="btn btn-light" type="button" data-step="-1" data-target="{{ form.returned_bottles.id_for_label }}" aria-label="Kamaytirish"><i class="bi bi-dash"></i></button>
+    {{ form.returned_bottles }}
+    <button class="btn btn-light" type="button" data-step="1" data-target="{{ form.returned_bottles.id_for_label }}" aria-label="Ko'paytirish"><i class="bi bi-plus"></i></button>
+  </div>
+  {% for error in form.returned_bottles.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+  <div class="form-text">Berilayotgan to'la butillar: {{ form.bottles_given }} ta · mijozda hozir: {{ order.customer.bottles }} ta</div>
+  {% if order.customer.bottles > form.bottles_given %}
+    <div class="d-flex flex-wrap align-items-center gap-2 mt-2">
+      <span class="small text-debt">Mijozda ortiqcha butil bor — hammasini oling:</span>
+      <button type="button" class="chip" data-set="{{ order.customer.bottles }}" data-target="{{ form.returned_bottles.id_for_label }}">Hammasi: {{ order.customer.bottles }} ta</button>
+    </div>
+  {% endif %}
+</div>

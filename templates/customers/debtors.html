@@ -1,0 +1,39 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Qarzdorlar{% endblock %}
+{% block page_title %}Qarzdorlar{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4"><div class="card stat">
+    <div class="stat-label">Umumiy qarz</div>
+    <div class="stat-value">{{ totals.total|som_stat }}</div>
+  </div></div>
+  <div class="col-6 col-md-4"><div class="card stat">
+    <div class="stat-label">Qarzdor mijozlar</div>
+    <div class="stat-value">{{ totals.count }}</div>
+  </div></div>
+</div>
+
+<form class="d-flex gap-2 mb-3" method="get">
+  <input class="form-control" style="max-width: 320px" type="search" name="q" value="{{ q }}" placeholder="Ism, telefon yoki manzil">
+  <button class="btn btn-light" type="submit"><i class="bi bi-search"></i></button>
+</form>
+
+<div class="card">
+  {% for c in page_obj %}
+    <div class="list-row">
+      <a class="main text-reset" href="{% url 'customers:detail' c.pk %}">
+        <div class="title text-truncate">{{ c.name }}</div>
+        <div class="meta">{{ c.phone|phone }} · {% if c.last_payment %}oxirgi to'lov {{ c.last_payment|date:"d.m.Y" }}{% else %}to'lov qilmagan{% endif %}</div>
+      </a>
+      <div class="side d-flex align-items-center gap-3">
+        <span class="num fw-medium text-debt">{{ c.debt|som }}</span>
+        <a class="btn btn-light btn-sm" href="{% url 'customers:payment' c.pk %}?next={{ request.get_full_path|urlencode }}">To'lov</a>
+      </div>
+    </div>
+  {% empty %}
+    <div class="empty"><i class="bi bi-emoji-smile"></i>Qarzdor mijozlar yo'q.</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

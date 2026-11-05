@@ -1,0 +1,47 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Buyurtmalar{% endblock %}
+{% block page_title %}Buyurtmalar{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'orders:create' %}"><i class="bi bi-plus-lg"></i> Yangi buyurtma</a>
+{% endblock %}
+{% block content %}
+{% with today_iso=today|date:"Y-m-d" tomorrow_iso=tomorrow|date:"Y-m-d" day_iso=day|date:"Y-m-d" %}
+<div class="chips mb-3">
+  <a class="chip{% if not day and not overdue %} active{% endif %}" href="?{% url_replace date='' overdue='' page='' %}">Hammasi</a>
+  <a class="chip{% if day_iso == today_iso %} active{% endif %}" href="?{% url_replace date=today_iso overdue='' page='' %}">Bugun</a>
+  <a class="chip{% if day_iso == tomorrow_iso %} active{% endif %}" href="?{% url_replace date=tomorrow_iso overdue='' page='' %}">Ertaga</a>
+  <a class="chip{% if overdue %} active{% endif %}" href="?{% url_replace overdue='1' date='' page='' %}">Kechikkan</a>
+</div>
+{% endwith %}
+
+<form class="row g-2 mb-3" method="get">
+  <div class="col-12 col-md-4"><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Mijoz, telefon yoki #raqam"></div>
+  <div class="col-6 col-md-2"><input class="form-control" type="date" name="date" value="{{ day|date:'Y-m-d' }}" aria-label="Sana"></div>
+  <div class="col-6 col-md-2">
+    <select class="form-select" name="status" aria-label="Holat">
+      <option value="">Barcha holatlar</option>
+      {% for value, label in statuses %}<option value="{{ value }}"{% if value == status %} selected{% endif %}>{{ label }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-8 col-md-3">
+    <select class="form-select" name="driver" aria-label="Yetkazuvchi">
+      <option value="">Barcha yetkazuvchilar</option>
+      <option value="none"{% if driver == "none" %} selected{% endif %}>Yetkazuvchisiz</option>
+      {% for d in drivers %}<option value="{{ d.pk }}"{% if d.pk|stringformat:"s" == driver %} selected{% endif %}>{{ d }}</option>{% endfor %}
+    </select>
+  </div>
+  <div class="col-4 col-md-1 d-grid"><button class="btn btn-light" type="submit" aria-label="Qidirish"><i class="bi bi-search"></i></button></div>
+  {% if overdue %}<input type="hidden" name="overdue" value="1">{% endif %}
+</form>
+
+<div class="d-flex justify-content-between small text-muted-2 mb-2">
+  <span>{{ page_obj.paginator.count }} ta buyurtma</span>
+  <span>Jami: <span class="num">{{ totals.amount|som }}</span></span>
+</div>
+<div class="card">
+  {% for order in page_obj %}{% include "orders/_order_row.html" %}
+  {% empty %}<div class="empty"><i class="bi bi-box-seam"></i>Buyurtma topilmadi.</div>{% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

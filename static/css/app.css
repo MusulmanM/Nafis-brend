@@ -1,0 +1,348 @@
+/*
+ * Minimalistik dizayn: oq kartochkalar, ingichka kulrang chiziqlar,
+ * bitta urg'u rangi (ko'k). Bootstrap 5 ustidan kichik o'zgarishlar.
+ */
+
+:root {
+  --app-bg: #f9f9f7;          /* sahifa foni */
+  --app-surface: #ffffff;     /* kartochka foni */
+  --app-hover: #f4f4f1;       /* sichqoncha ustiga kelganda */
+  --app-ink: #0b0b0b;         /* asosiy matn */
+  --app-ink-2: #52514e;       /* ikkinchi darajali matn */
+  --app-muted: #898781;       /* xira matn, izohlar */
+  --app-line: #e1e0d9;        /* chiziqlar, chegaralar */
+  --app-accent: #256abf;      /* urg'u (tugmalar, linklar) */
+  --app-accent-hover: #1c5cab;
+  --app-accent-soft: #eaf2fc;
+  --app-good: #0ca30c;
+  --app-warning: #fab219;
+  --app-critical: #d03b3b;
+
+  --bs-body-bg: var(--app-bg);
+  --bs-body-color: var(--app-ink);
+  --bs-secondary-color: var(--app-muted);
+  --bs-border-color: var(--app-line);
+  --bs-primary: #256abf;
+  --bs-primary-rgb: 37, 106, 191;
+  --bs-link-color: #256abf;
+  --bs-link-color-rgb: 37, 106, 191;
+  --bs-link-hover-color: #1c5cab;
+  --bs-link-hover-color-rgb: 28, 92, 171;
+  --bs-body-font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bs-body-font-size: .9375rem;
+  --bs-border-radius: .5rem;
+  --bs-border-radius-lg: .75rem;
+}
+
+a { text-decoration: none; }
+h1, h2, h3, h4, h5 { letter-spacing: -.01em; }
+
+/* --- Karkas: chap menyu + asosiy qism --------------------------------- */
+
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--app-surface);
+  border-right: 1px solid var(--app-line);
+}
+.topbar {
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-line);
+}
+.app-main { min-width: 0; }
+.offcanvas { --bs-offcanvas-bg: var(--app-surface); }
+.app-container { max-width: 1200px; padding: 1.25rem 1rem 3rem; }
+@media (min-width: 992px) {
+  .app-container { padding: 2rem 2rem 4rem; }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .625rem;
+  font-weight: 600;
+  color: var(--app-ink);
+}
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--app-accent);
+  color: #fff;
+  display: inline-grid;
+  place-items: center;
+  font-size: .875rem;
+}
+
+.side-nav .nav-link {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  color: var(--app-ink-2);
+}
+.side-nav .nav-link:hover { background: var(--app-hover); color: var(--app-ink); }
+.side-nav .nav-link.active {
+  background: var(--app-accent-soft);
+  color: var(--app-accent);
+  font-weight: 500;
+}
+.side-nav .bi { font-size: 1.05rem; }
+
+/* --- Sahifa sarlavhasi ------------------------------------------------- */
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.page-title { font-size: 1.375rem; font-weight: 600; margin: 0; }
+.page-subtitle { color: var(--app-muted); font-size: .875rem; margin-top: .25rem; }
+.page-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* --- Kartochkalar ------------------------------------------------------ */
+
+.card {
+  --bs-card-border-color: var(--app-line);
+  --bs-card-border-radius: .75rem;
+  --bs-card-inner-border-radius: calc(.75rem - 1px);
+  --bs-card-cap-bg: transparent;
+  --bs-card-bg: var(--app-surface);
+}
+.card-header {
+  font-weight: 600;
+  padding: .875rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+}
+.card-header .small, .card-header a { font-weight: 400; }
+
+.section-title {
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--app-muted);
+  margin: 0 0 .5rem;
+}
+
+/* KPI (raqamli ko'rsatkich) plitkalari */
+.stat { padding: 1rem 1.125rem; height: 100%; }
+.stat-label { color: var(--app-muted); font-size: .8125rem; }
+.stat-value { font-size: 1.5rem; font-weight: 600; line-height: 1.25; margin-top: .25rem; }
+.stat-note { color: var(--app-muted); font-size: .8125rem; margin-top: .125rem; }
+.stat-unit { font-size: .875rem; font-weight: 500; color: var(--app-ink-2); }
+@media (max-width: 575.98px) {
+  .stat { padding: .875rem 1rem; }
+  .stat-value { font-size: 1.25rem; }
+}
+.stat-link { color: inherit; display: block; height: 100%; }
+.stat-link:hover .card { border-color: #c3c2b7; }
+
+/* --- Ro'yxat qatorlari (telefon va kompyuterda bir xil qulay) ---------- */
+
+.list-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid var(--app-line);
+  color: inherit;
+}
+.list-row:last-child { border-bottom: 0; }
+a.list-row:hover { background: #fbfbfa; color: inherit; }
+.list-row .main { min-width: 0; }
+.list-row .title { font-weight: 500; }
+.list-row .meta {
+  color: var(--app-muted);
+  font-size: .8125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.list-row .side { text-align: right; flex-shrink: 0; }
+
+.empty {
+  text-align: center;
+  color: var(--app-muted);
+  padding: 2.5rem 1rem;
+}
+.empty .bi { font-size: 1.75rem; display: block; margin-bottom: .5rem; color: #c3c2b7; }
+
+/* --- Jadvallar -------------------------------------------------------- */
+
+.table { --bs-table-bg: transparent; margin-bottom: 0; }
+.table > :not(caption) > * > * { padding: .625rem 1rem; border-bottom-color: var(--app-line); }
+.table thead th { font-weight: 500; color: var(--app-muted); font-size: .8125rem; white-space: nowrap; }
+.table tbody tr:last-child > * { border-bottom: 0; }
+.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* --- Buyurtma holati: rangli nuqta + matn ----------------------------- */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .8125rem;
+  color: var(--app-ink-2);
+  white-space: nowrap;
+}
+.status::before {
+  content: "";
+  width: .5rem;
+  height: .5rem;
+  border-radius: 50%;
+  background: var(--app-muted);
+}
+.status-new::before { background: #898781; }
+.status-on_way::before { background: #2a78d6; }
+.status-delivered::before { background: var(--app-good); }
+.status-failed::before { background: var(--app-critical); }
+.status-cancelled { color: var(--app-muted); }
+.status-cancelled::before { background: #c3c2b7; }
+/* Butil olib kelish topshirig'i */
+.status-planned::before { background: #2a78d6; }
+.status-done::before { background: var(--app-good); }
+
+/* Kartochka turi belgisi ("Butil olib kelish") */
+.task-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--app-accent);
+}
+
+/* --- Formalar va tugmalar ---------------------------------------------- */
+
+.form-control, .form-select { border-color: var(--app-line); background-color: #fff; }
+.form-control:focus, .form-select:focus {
+  border-color: var(--app-accent);
+  box-shadow: 0 0 0 3px rgba(37, 106, 191, .15);
+}
+.form-label { font-size: .875rem; font-weight: 500; color: var(--app-ink-2); margin-bottom: .375rem; }
+.form-text { color: var(--app-muted); font-size: .8125rem; }
+
+.btn { font-weight: 500; }
+.btn-primary {
+  --bs-btn-bg: #256abf;
+  --bs-btn-border-color: #256abf;
+  --bs-btn-hover-bg: #1c5cab;
+  --bs-btn-hover-border-color: #1c5cab;
+  --bs-btn-active-bg: #184f95;
+  --bs-btn-active-border-color: #184f95;
+  --bs-btn-disabled-bg: #256abf;
+  --bs-btn-disabled-border-color: #256abf;
+}
+.btn-light {
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: var(--app-line);
+  --bs-btn-hover-bg: var(--app-hover);
+  --bs-btn-hover-border-color: var(--app-line);
+  --bs-btn-active-bg: #ecebe6;
+  --bs-btn-active-border-color: var(--app-line);
+  --bs-btn-color: var(--app-ink);
+}
+
+/* Filtr "chip"lari */
+.chips { display: flex; flex-wrap: wrap; gap: .375rem; }
+.chip {
+  border: 1px solid var(--app-line);
+  background: #fff;
+  color: var(--app-ink-2);
+  border-radius: 999px;
+  padding: .25rem .75rem;
+  font-size: .8125rem;
+}
+.chip:hover { background: var(--app-hover); color: var(--app-ink); }
+.chip.active { background: var(--app-ink); border-color: var(--app-ink); color: #fff; }
+
+/* Mahsulot sonini tanlash: [-] 2 [+] */
+.qty { display: flex; align-items: center; gap: .375rem; }
+.qty input { width: 4rem; text-align: center; }
+.qty .btn { width: 2.25rem; height: 2.25rem; padding: 0; }
+
+/* Ma'lumot juftliklari (yorliq: qiymat) */
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: .5rem 1.25rem; margin: 0; }
+.kv dt { color: var(--app-muted); font-weight: 400; font-size: .875rem; }
+.kv dd { margin: 0; }
+
+.text-muted-2 { color: var(--app-muted) !important; }
+.text-debt { color: var(--app-critical); }
+
+/* --- Login sahifasi ---------------------------------------------------- */
+
+.auth-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+.auth-card { width: 100%; max-width: 380px; }
+
+/* --- Grafik ------------------------------------------------------------ */
+
+.chart-box { position: relative; height: 240px; }
+
+/* --- Yetkazuvchi paneli (telefon) ------------------------------------- */
+
+.driver-container { max-width: 640px; margin: 0 auto; padding-left: 1rem; padding-right: 1rem; }
+.driver-main { padding-top: 1.25rem; padding-bottom: 6rem; }
+.btn-big { padding: .75rem 1rem; font-size: 1.0625rem; }
+.driver-card .status { font-size: .875rem; }
+.note {
+  background: #fbf8ef;
+  border: 1px solid #efe6c9;
+  border-radius: .5rem;
+  padding: .5rem .75rem;
+  font-size: .875rem;
+}
+.hero-value { font-size: 2.5rem; font-weight: 600; line-height: 1.2; margin-top: .25rem; }
+.hero-value .stat-unit { font-size: 1rem; }
+
+.pay-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+.pay-types .btn { padding: .625rem .25rem; }
+.btn-check:checked + .btn-light {
+  background: var(--app-accent-soft);
+  border-color: var(--app-accent);
+  color: var(--app-accent);
+}
+.qty-lg input { width: 5rem; height: 2.75rem; font-size: 1.125rem; }
+.qty-lg .btn { width: 2.75rem; height: 2.75rem; }
+
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1030;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--app-surface);
+  border-top: 1px solid var(--app-line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .125rem;
+  padding: .5rem 0 .625rem;
+  color: var(--app-muted);
+  font-size: .8125rem;
+}
+.bottom-nav a .bi { font-size: 1.375rem; }
+.bottom-nav a.active { color: var(--app-accent); }
+
+code { color: var(--app-ink-2); background: #f0efec; padding: .1em .35em; border-radius: .25rem; }
+.form-check-input:checked { background-color: var(--app-accent); border-color: var(--app-accent); }
+.form-check-input:focus { border-color: var(--app-accent); box-shadow: 0 0 0 3px rgba(37, 106, 191, .15); }

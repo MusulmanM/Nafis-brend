@@ -1,0 +1,33 @@
+{% extends "layouts/boss.html" %}
+{% block title %}{% if is_new %}Yangi yetkazuvchi{% else %}Tahrirlash{% endif %}{% endblock %}
+{% block page_title %}{% if is_new %}Yangi yetkazuvchi{% else %}{{ driver }} — tahrirlash{% endif %}{% endblock %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-7 col-xl-6">
+    <div class="card"><div class="card-body p-4">
+      {% include "partials/form_errors.html" %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-sm-6">{% include "partials/field.html" with field=form.first_name %}</div>
+          <div class="col-sm-6">{% include "partials/field.html" with field=form.last_name %}</div>
+        </div>
+        {% include "partials/field.html" with field=form.phone %}
+        <hr class="my-4">
+        <div class="section-title">Tizimga kirish</div>
+        {% include "partials/field.html" with field=form.username %}
+        {% if is_new %}
+          {% include "partials/field.html" with field=form.password1 %}
+          {% include "partials/field.html" with field=form.password2 %}
+        {% else %}
+          {% include "partials/field.html" with field=form.new_password %}
+        {% endif %}
+        <div class="d-flex gap-2 mt-4">
+          <button class="btn btn-primary" type="submit">Saqlash</button>
+          <a class="btn btn-light" href="{% if is_new %}{% url 'accounts:driver_list' %}{% else %}{% url 'accounts:driver_detail' driver.pk %}{% endif %}">Bekor qilish</a>
+        </div>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}{{ driver }}{% endblock %}
+{% block page_title %}{{ driver }}{% endblock %}
+{% block page_subtitle %}
+  <div class="page-subtitle">
+    {% if driver.phone %}<a href="tel:{{ driver.phone }}">{{ driver.phone|phone }}</a> · {% endif %}login: {{ driver.username }}
+    · {% if driver.is_active %}faol{% else %}<span class="text-danger">bloklangan</span>{% endif %}
+  </div>
+{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-light" href="{% url 'accounts:driver_edit' driver.pk %}"><i class="bi bi-pencil"></i> Tahrirlash</a>
+  <form method="post" action="{% url 'accounts:driver_toggle' driver.pk %}"
+        data-confirm="{% if driver.is_active %}Yetkazuvchini bloklaysizmi? U tizimga kira olmaydi.{% else %}Blokdan chiqarasizmi?{% endif %}">
+    {% csrf_token %}
+    {% if driver.is_active %}
+      <button class="btn btn-light text-danger" type="submit"><i class="bi bi-slash-circle"></i> Bloklash</button>
+    {% else %}
+      <button class="btn btn-light" type="submit"><i class="bi bi-check-circle"></i> Blokdan chiqarish</button>
+    {% endif %}
+  </form>
+{% endblock %}
+{% block content %}
+<div class="card mb-4">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr>
+        <th>Davr</th><th class="text-end">Buyurtmalar</th><th class="text-end">Yetkazildi</th>
+        <th class="text-end">Yetkazib bo'lmadi</th><th class="text-end">Yig'ilgan pul</th><th class="text-end">Shundan naqd</th><th class="text-end">Qaytgan butil</th>
+      </tr></thead>
+      <tbody>
+        {% for row in stats %}
+        <tr>
+          <td class="fw-medium">{{ row.label }}</td>
+          <td class="text-end num">{{ row.total }}</td>
+          <td class="text-end num">{{ row.delivered }}</td>
+          <td class="text-end num">{{ row.failed }}</td>
+          <td class="text-end num">{{ row.collected|som }}</td>
+          <td class="text-end num">{{ row.cash|som }}</td>
+          <td class="text-end num">{{ row.bottles_returned }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="section-title">Yakunlanmagan buyurtmalar</div>
+    <div class="card">
+      {% for order in open_orders %}{% include "orders/_order_row.html" with hide_driver=True %}
+      {% empty %}<div class="empty">Yakunlanmagan buyurtma yo'q.</div>{% endfor %}
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="section-title">Oxirgi yakunlangan buyurtmalar</div>
+    <div class="card">
+      {% for order in recent_orders %}{% include "orders/_order_row.html" with hide_driver=True %}
+      {% empty %}<div class="empty">Hali buyurtma yo'q.</div>{% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

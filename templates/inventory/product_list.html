@@ -1,0 +1,22 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Mahsulotlar{% endblock %}
+{% block page_title %}Mahsulotlar va narxlar{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'inventory:product_create' %}"><i class="bi bi-plus-lg"></i> Mahsulot qo'shish</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  {% for p in products %}
+    <a class="list-row" href="{% url 'inventory:product_edit' p.pk %}">
+      <div class="main">
+        <div class="title">{{ p.name }}{% if not p.is_active %} <span class="badge text-bg-light border fw-normal">faol emas</span>{% endif %}</div>
+        <div class="meta">{% if p.is_returnable %}Qaytariladigan butil{% else %}Bir martalik{% endif %}</div>
+      </div>
+      <div class="side num fw-medium">{{ p.price|som }}</div>
+    </a>
+  {% empty %}
+    <div class="empty"><i class="bi bi-tag"></i>Hali mahsulot qo'shilmagan.</div>
+  {% endfor %}
+</div>
+{% endblock %}

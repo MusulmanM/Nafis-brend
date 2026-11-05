@@ -1,0 +1,73 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Ombor{% endblock %}
+{% block page_title %}Ombor{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">Qoldiq = ishlab chiqarilgan − yetkazilgan</div>{% endblock %}
+{% block content %}
+<div class="card mb-4">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr>
+        <th>Mahsulot</th>
+        <th class="text-end">Qoldiq</th>
+        <th class="text-end">Bugun ishlab chiqarildi</th>
+        <th class="text-end">Jami ishlab chiqarilgan</th>
+        <th class="text-end">Jami yetkazilgan</th>
+        <th class="text-end">Buyurtmada kutilmoqda</th>
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td class="fw-medium">{{ row.product }}{% if not row.product.is_active %} <span class="text-muted-2 small fw-normal">(faol emas)</span>{% endif %}</td>
+          <td class="text-end num fw-semibold{% if row.remaining < 0 %} text-danger{% elif row.remaining < row.pending %} text-warning-emphasis{% endif %}">{{ row.remaining|num }}</td>
+          <td class="text-end num">{{ row.produced_today|num }}</td>
+          <td class="text-end num">{{ row.produced|num }}</td>
+          <td class="text-end num">{{ row.delivered|num }}</td>
+          <td class="text-end num">{{ row.pending|num }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="empty">Avval <a href="{% url 'inventory:product_create' %}">mahsulot qo'shing</a>.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="section-title">Ishlab chiqarishni kiritish</div>
+    <div class="card"><div class="card-body p-4">
+      {% include "partials/form_errors.html" %}
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="row">
+          <div class="col-sm-6">{% include "partials/field.html" with field=form.date %}</div>
+          <div class="col-sm-6">{% include "partials/field.html" with field=form.quantity %}</div>
+        </div>
+        {% include "partials/field.html" with field=form.product %}
+        {% include "partials/field.html" with field=form.note %}
+        <button class="btn btn-primary" type="submit">Kiritish</button>
+      </form>
+    </div></div>
+  </div>
+  <div class="col-lg-7">
+    <div class="section-title">Oxirgi yozuvlar</div>
+    <div class="card">
+      {% for e in entries %}
+        <div class="list-row">
+          <div class="main">
+            <div class="title">{{ e.product }} <span class="num">× {{ e.quantity|num }}</span></div>
+            <div class="meta">{{ e.date|date:"d.m.Y" }}{% if e.created_by %} · {{ e.created_by }}{% endif %}{% if e.note %} · {{ e.note }}{% endif %}</div>
+          </div>
+          <form method="post" action="{% url 'inventory:stock_entry_delete' e.pk %}" data-confirm="Bu yozuvni o'chirasizmi?">
+            {% csrf_token %}
+            <button class="btn btn-light btn-sm" type="submit" title="O'chirish" aria-label="O'chirish"><i class="bi bi-trash3"></i></button>
+          </form>
+        </div>
+      {% empty %}
+        <div class="empty"><i class="bi bi-boxes"></i>Hali yozuv yo'q.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

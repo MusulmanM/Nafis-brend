@@ -1,0 +1,14 @@
+{% extends "layouts/driver.html" %}
+{% block title %}Olib keldim{% endblock %}
+{% block page_title %}Butillarni olib keldim{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">{{ pickup.customer.name }} · mijozda {{ pickup.customer.bottles }} ta butil</div>{% endblock %}
+{% block content %}
+<form class="card" method="post">
+  {% csrf_token %}
+  <div class="card-body">{% include "driver/_pickup_fields.html" %}</div>
+  <div class="card-body border-top d-grid gap-2">
+    <button class="btn btn-success btn-big" type="submit">Tasdiqlash</button>
+    <a class="btn btn-light" href="{% url 'driver:today' %}">Orqaga</a>
+  </div>
+</form>
+{% endblock %}

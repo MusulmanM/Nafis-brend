@@ -1,0 +1,15 @@
+{% extends "layouts/driver.html" %}
+{% load formatting %}
+{% block title %}Yetkazib berdim{% endblock %}
+{% block page_title %}Yetkazib berdim{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">#{{ order.pk }} · {{ order.customer.name }} · {{ order.total_amount|som }}</div>{% endblock %}
+{% block content %}
+<form class="card" method="post" data-delivery-form>
+  {% csrf_token %}
+  <div class="card-body">{% include "driver/_deliver_fields.html" %}</div>
+  <div class="card-body border-top d-grid gap-2">
+    <button class="btn btn-success btn-big" type="submit">Tasdiqlash</button>
+    <a class="btn btn-light" href="{% url 'driver:today' %}">Orqaga</a>
+  </div>
+</form>
+{% endblock %}

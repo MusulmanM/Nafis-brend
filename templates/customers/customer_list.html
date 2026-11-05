@@ -1,0 +1,35 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Mijozlar{% endblock %}
+{% block page_title %}Mijozlar{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'customers:create' %}"><i class="bi bi-plus-lg"></i> Mijoz qo'shish</a>
+{% endblock %}
+{% block content %}
+<form class="d-flex flex-wrap gap-2 mb-3" method="get">
+  <input class="form-control" style="max-width: 320px" type="search" name="q" value="{{ q }}" placeholder="Ism, telefon yoki manzil">
+  <select class="form-select" style="max-width: 160px" name="type" onchange="this.form.submit()">
+    <option value="">Barcha turlar</option>
+    {% for value, label in types %}<option value="{{ value }}"{% if value == ctype %} selected{% endif %}>{{ label }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-light" type="submit"><i class="bi bi-search"></i> Qidirish</button>
+</form>
+
+<div class="card">
+  {% for c in page_obj %}
+    <a class="list-row" href="{% url 'customers:detail' c.pk %}">
+      <div class="main">
+        <div class="title text-truncate">{{ c.name }} <span class="text-muted-2 fw-normal small">· {{ c.get_customer_type_display }}</span></div>
+        <div class="meta">{{ c.phone|phone }} · {{ c.address }}</div>
+      </div>
+      <div class="side small">
+        {% if c.debt %}<div class="num text-debt">{{ c.debt|som }}</div>{% endif %}
+        {% if c.bottles %}<div class="text-muted-2">{{ c.bottles }} ta butil</div>{% endif %}
+      </div>
+    </a>
+  {% empty %}
+    <div class="empty"><i class="bi bi-people"></i>{% if q or ctype %}Hech narsa topilmadi.{% else %}Hali mijoz qo'shilmagan.{% endif %}</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

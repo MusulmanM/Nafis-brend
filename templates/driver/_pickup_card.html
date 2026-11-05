@@ -1,0 +1,78 @@
+{% load formatting %}
+{% comment %}Butil olib kelish topshirig'i kartochkasi (buyurtma kartochkasiga o'xshash).{% endcomment %}
+<div class="card driver-card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="task-tag"><i class="bi bi-arrow-return-left"></i> Butil olib kelish</span>
+      {% if pickup.date < today %}<span class="small text-danger">kechikkan ({{ pickup.date|date:"d.m" }})</span>{% endif %}
+    </div>
+
+    <div class="fs-5 fw-semibold mb-2">{{ pickup.customer.name }}</div>
+    <a class="btn btn-light w-100 btn-big mb-2" href="tel:{{ pickup.customer.phone }}"><i class="bi bi-telephone"></i> {{ pickup.customer.phone|phone }}</a>
+    {% if pickup.customer.phone2 %}<a class="btn btn-light w-100 mb-2" href="tel:{{ pickup.customer.phone2 }}"><i class="bi bi-telephone"></i> {{ pickup.customer.phone2|phone }}</a>{% endif %}
+
+    <div class="mb-1"><i class="bi bi-geo-alt text-muted-2"></i> {{ pickup.customer.address }}</div>
+    {% if pickup.customer.landmark %}<div class="small text-muted-2 mb-2">Mo'ljal: {{ pickup.customer.landmark }}</div>{% endif %}
+    <div class="d-flex gap-2 mb-3">
+      <a class="btn btn-light btn-sm flex-fill" href="{{ pickup.customer.yandex_maps_url }}" target="_blank" rel="noopener"><i class="bi bi-map"></i> Yandex xarita</a>
+      <a class="btn btn-light btn-sm flex-fill" href="{{ pickup.customer.google_maps_url }}" target="_blank" rel="noopener"><i class="bi bi-map"></i> Google xarita</a>
+    </div>
+
+    <div class="border-top pt-2 d-flex justify-content-between align-items-baseline">
+      <span>Olib kelinadigan butillar</span>
+      <span class="fs-4 fw-semibold num">{{ pickup.customer.bottles }} ta</span>
+    </div>
+    {% if pickup.customer.debt %}<div class="d-flex justify-content-between text-debt small"><span>Mijoz qarzi</span><span class="num">{{ pickup.customer.debt|som }}</span></div>{% endif %}
+    {% if pickup.note %}<div class="note mt-2"><i class="bi bi-chat-left-text"></i> {{ pickup.note }}</div>{% endif %}
+    {% if pickup.customer.note %}<div class="note mt-2"><i class="bi bi-info-circle"></i> {{ pickup.customer.note }}</div>{% endif %}
+
+    <div class="d-grid gap-2 mt-3">
+      {% if pickup.customer.bottles %}
+        <button class="btn btn-success btn-big" type="button" data-bs-toggle="modal" data-bs-target="#pickup-done-{{ pickup.pk }}">
+          <i class="bi bi-check2-circle"></i> Olib keldim
+        </button>
+      {% else %}
+        <div class="small text-muted-2 text-center">Mijozda butil qolmagan — topshiriqni "Bo'lmadi" bilan yoping.</div>
+      {% endif %}
+      <button class="btn btn-light btn-big text-danger" type="button" data-bs-toggle="modal" data-bs-target="#pickup-fail-{{ pickup.pk }}">
+        <i class="bi bi-x-circle"></i> Bo'lmadi
+      </button>
+    </div>
+  </div>
+</div>
+
+{% if pickup.customer.bottles %}
+{# "Olib keldim" oynasi #}
+<div class="modal fade" id="pickup-done-{{ pickup.pk }}" tabindex="-1" aria-labelledby="pickup-done-title-{{ pickup.pk }}" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+    <form class="modal-content" method="post" action="{% url 'driver:pickup_done' pickup.pk %}">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="pickup-done-title-{{ pickup.pk }}">Olib keldim · {{ pickup.customer.name }}</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+      </div>
+      <div class="modal-body">{% include "driver/_pickup_fields.html" with form=pickup.done_form %}</div>
+      <div class="modal-footer">
+        <button class="btn btn-success btn-big w-100" type="submit">Tasdiqlash</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{# "Bo'lmadi" oynasi #}
+<div class="modal fade" id="pickup-fail-{{ pickup.pk }}" tabindex="-1" aria-labelledby="pickup-fail-title-{{ pickup.pk }}" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+    <form class="modal-content" method="post" action="{% url 'driver:pickup_fail' pickup.pk %}">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="pickup-fail-title-{{ pickup.pk }}">Olib kelib bo'lmadi · {{ pickup.customer.name }}</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+      </div>
+      <div class="modal-body">{% include "driver/_fail_fields.html" with form=pickup.fail_form %}</div>
+      <div class="modal-footer">
+        <button class="btn btn-danger btn-big w-100" type="submit">Saqlash</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,160 @@
+{% extends "layouts/boss.html" %}
+{% load static formatting %}
+{% block title %}Hisobotlar{% endblock %}
+{% block page_title %}Hisobotlar{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">{{ start|date:"d.m.Y" }}{% if start != end %} — {{ end|date:"d.m.Y" }}{% endif %} · {{ days }} kun</div>{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-light" href="{% url 'reports:export' %}?{{ query }}"><i class="bi bi-file-earmark-excel"></i> Excel'ga yuklab olish</a>
+{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap gap-2 align-items-center mb-4">
+  <div class="chips">
+    {% for value, label in presets %}
+      <a class="chip{% if period == value %} active{% endif %}" href="?period={{ value }}">{{ label }}</a>
+    {% endfor %}
+  </div>
+  <form class="d-flex flex-wrap gap-2 align-items-center" method="get">
+    <input type="hidden" name="period" value="custom">
+    <input class="form-control form-control-sm" style="width: 150px" type="date" name="from" value="{{ start|date:'Y-m-d' }}" aria-label="Boshlanish sanasi">
+    <span class="text-muted-2">—</span>
+    <input class="form-control form-control-sm" style="width: 150px" type="date" name="to" value="{{ end|date:'Y-m-d' }}" aria-label="Tugash sanasi">
+    <button class="btn btn-light btn-sm{% if period == 'custom' %} active{% endif %}" type="submit">Ko'rsatish</button>
+  </form>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-4"><div class="card stat">
+    <div class="stat-label">Jami tushum</div>
+    <div class="stat-value">{{ money.received|som_stat }}</div>
+    <div class="stat-note">shundan qarz to'lovlari {{ money.debt_payments|som }}</div>
+  </div></div>
+  <div class="col-6 col-lg-4"><div class="card stat">
+    <div class="stat-label">Sotuv summasi</div>
+    <div class="stat-value">{{ money.sales|som_stat }}</div>
+    <div class="stat-note">qarzga berildi {{ money.new_debt|som }}</div>
+  </div></div>
+  <div class="col-12 col-lg-4"><div class="card stat">
+    <div class="stat-label">Buyurtmalar</div>
+    <div class="stat-value">{{ counts.total }}</div>
+    <div class="stat-note">{{ counts.delivered }} yetkazildi · {{ counts.failed }} bo'lmadi{% if counts.pending %} · {{ counts.pending }} kutilmoqda{% endif %}{% if counts.cancelled %} · {{ counts.cancelled }} bekor{% endif %}</div>
+  </div></div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><span>Tushum dinamikasi</span><span class="small text-muted-2">buyurtmalardan olingan pul + qarz to'lovlari</span></div>
+  <div class="card-body">
+    <div class="chart-box"><canvas id="daily-chart" role="img" aria-label="Davr bo'yicha tushum grafigi"></canvas></div>
+    <details class="mt-3 small">
+      <summary class="text-muted-2">Jadval ko'rinishi</summary>
+      <div class="table-responsive" style="max-height: 320px">
+        <table class="table table-sm mt-2">
+          <tbody>{% for day, amount in daily %}<tr><td>{{ day|date:"d.m.Y, l" }}</td><td class="text-end num">{{ amount|som }}</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><span>To'lov turlari bo'yicha</span></div>
+      <div class="card-body pb-0"><div class="chart-box" style="height: 200px"><canvas id="payment-chart" role="img" aria-label="To'lov turlari bo'yicha tushum"></canvas></div></div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Tur</th><th class="text-end">Buyurtmalardan</th><th class="text-end">Qarz to'lovi</th><th class="text-end">Jami</th></tr></thead>
+          <tbody>
+            {% for row in payment_types %}
+              <tr><td>{{ row.label }}</td><td class="text-end num">{{ row.orders|som }}</td><td class="text-end num">{{ row.payments|som }}</td><td class="text-end num fw-medium">{{ row.total|som }}</td></tr>
+            {% endfor %}
+            <tr><td>Qarzga berildi</td><td class="text-end num">{{ money.new_debt|som }}</td><td></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><span>Mahsulotlar bo'yicha sotuv</span></div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Mahsulot</th><th class="text-end">Soni</th><th class="text-end">Summa</th></tr></thead>
+          <tbody>
+            {% for p in products %}
+              <tr><td>{{ p.product__name }}</td><td class="text-end num">{{ p.sold|num }}</td><td class="text-end num">{{ p.amount|som }}</td></tr>
+            {% empty %}
+              <tr><td colspan="3" class="empty">Bu davrda sotuv yo'q.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="card-body border-top small text-muted-2">
+        Butillar: {{ money.bottles_given|num }} ta berildi, {{ money.bottles_returned|num }} ta qaytarildi{% if money.bottles_picked %} (shundan {{ money.bottles_picked|num }} tasi alohida olib kelingan){% endif %}.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><span>Yetkazuvchilar</span></div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Yetkazuvchi</th><th class="text-end">Yetkazdi</th><th class="text-end">Bo'lmadi</th><th class="text-end">Yig'gan pul</th><th class="text-end">Shundan naqd</th><th class="text-end">Qaytgan butil</th></tr></thead>
+          <tbody>
+            {% for d in drivers %}
+              <tr>
+                <td><a href="{% url 'accounts:driver_detail' d.pk %}">{{ d }}</a></td>
+                <td class="text-end num">{{ d.delivered }}</td>
+                <td class="text-end num">{{ d.failed }}</td>
+                <td class="text-end num">{{ d.collected|som }}</td>
+                <td class="text-end num">{{ d.cash|som }}</td>
+                <td class="text-end num">{{ d.bottles_returned }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="6" class="empty">Bu davrda yetkazish bo'lmagan.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><span>Eng ko'p buyurtma bergan 10 mijoz</span></div>
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>#</th><th>Mijoz</th><th class="text-end">Buyurtma</th><th class="text-end">Summa</th></tr></thead>
+          <tbody>
+            {% for c in top_customers %}
+              <tr>
+                <td class="text-muted-2">{{ forloop.counter }}</td>
+                <td><a href="{% url 'customers:detail' c.pk %}">{{ c.name }}</a></td>
+                <td class="text-end num">{{ c.order_count }}</td>
+                <td class="text-end num">{{ c.amount|som }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="empty">Bu davrda buyurtma yo'q.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{{ chart|json_script:"daily-data" }}
+{{ payment_chart|json_script:"payment-data" }}
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+<script>
+  (function () {
+    const daily = JSON.parse(document.getElementById("daily-data").textContent);
+    const pay = JSON.parse(document.getElementById("payment-data").textContent);
+    AppCharts.columns(document.getElementById("daily-chart"), daily.labels, daily.values);
+    AppCharts.bars(document.getElementById("payment-chart"), pay.labels, pay.values);
+  })();
+</script>
+{% endblock %}

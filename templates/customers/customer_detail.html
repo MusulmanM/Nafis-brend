@@ -1,0 +1,132 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}{{ customer.name }}{% endblock %}
+{% block page_title %}{{ customer.name }}{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">{{ customer.get_customer_type_display }} · mijoz {{ customer.created_at|date:"d.m.Y" }} dan beri</div>{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'orders:create' %}?phone={{ customer.phone|urlencode }}"><i class="bi bi-plus-lg"></i> Buyurtma</a>
+  {% if customer.debt %}<a class="btn btn-light" href="{% url 'customers:payment' customer.pk %}"><i class="bi bi-cash"></i> To'lov qabul qilish</a>{% endif %}
+  {% if customer.bottles %}<a class="btn btn-light" href="{% url 'customers:bottle_return' customer.pk %}"><i class="bi bi-box-arrow-in-down"></i> Butil qabul qilish</a>{% endif %}
+  <a class="btn btn-light" href="{% url 'customers:edit' customer.pk %}"><i class="bi bi-pencil"></i> Tahrirlash</a>
+{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="card stat">
+    <div class="stat-label">Qarz</div>
+    <div class="stat-value{% if customer.debt %} text-debt{% endif %}">{{ customer.debt|som_stat }}</div>
+  </div></div>
+  <div class="col-6 col-md-3"><div class="card stat">
+    <div class="stat-label">Mijozdagi butillar</div>
+    <div class="stat-value">{{ customer.bottles }}</div>
+    <div class="stat-note">
+      {% if open_pickup %}
+        <span class="status status-planned">{{ open_pickup.driver|default:"" }} olib keladi, {{ open_pickup.date|date:"d.m" }}</span>
+      {% elif customer.bottles %}
+        <a href="{% url 'customers:pickup_create' customer.pk %}">Olib kelishga yuborish</a>
+      {% else %}
+        oxirgi yetkazish: {{ summary.last_delivery|date:"d.m.Y"|default:"—" }}
+      {% endif %}
+    </div>
+  </div></div>
+  <div class="col-6 col-md-3"><div class="card stat">
+    <div class="stat-label">Buyurtmalar</div>
+    <div class="stat-value">{{ summary.total }}</div>
+    <div class="stat-note">{{ summary.delivered }} tasi yetkazilgan</div>
+  </div></div>
+  <div class="col-6 col-md-3"><div class="card stat">
+    <div class="stat-label">Jami to'lagan</div>
+    <div class="stat-value">{{ summary.paid|som_stat }}</div>
+  </div></div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card mb-4"><div class="card-body">
+      <dl class="kv">
+        <dt>Telefon</dt><dd><a href="tel:{{ customer.phone }}">{{ customer.phone|phone }}</a></dd>
+        {% if customer.phone2 %}<dt>Qo'shimcha</dt><dd><a href="tel:{{ customer.phone2 }}">{{ customer.phone2|phone }}</a></dd>{% endif %}
+        <dt>Manzil</dt><dd>{{ customer.address }}</dd>
+        {% if customer.landmark %}<dt>Mo'ljal</dt><dd>{{ customer.landmark }}</dd>{% endif %}
+        {% if customer.note %}<dt>Izoh</dt><dd>{{ customer.note|linebreaksbr }}</dd>{% endif %}
+      </dl>
+      <div class="d-flex gap-2 mt-3">
+        <a class="btn btn-light btn-sm" href="{{ customer.yandex_maps_url }}" target="_blank" rel="noopener"><i class="bi bi-geo-alt"></i> Yandex xarita</a>
+        <a class="btn btn-light btn-sm" href="{{ customer.google_maps_url }}" target="_blank" rel="noopener"><i class="bi bi-map"></i> Google xarita</a>
+      </div>
+    </div></div>
+
+    <div class="section-title d-flex justify-content-between">
+      <span>Doimiy buyurtmalar</span>
+      <a class="small" href="{% url 'orders:recurring_create' %}?customer={{ customer.pk }}">+ qo'shish</a>
+    </div>
+    {% if recurring_orders %}
+    <div class="card mb-4">
+      {% for r in recurring_orders %}
+        <a class="list-row" href="{% url 'orders:recurring_edit' r.pk %}">
+          <div class="main">
+            <div class="title">{{ r.weekdays_display }}</div>
+            <div class="meta">{% for item in r.items.all %}{{ item.product }} × {{ item.quantity }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+          </div>
+          <div class="side small text-muted-2">{% if r.is_active %}faol{% else %}to'xtatilgan{% endif %}</div>
+        </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="small text-muted-2 mb-4">Yo'q.</div>
+    {% endif %}
+
+    <div class="section-title d-flex justify-content-between">
+      <span>Butil qaytarish</span>
+      {% if customer.bottles and not open_pickup %}<a class="small" href="{% url 'customers:pickup_create' customer.pk %}">+ olib kelishga yuborish</a>{% endif %}
+    </div>
+    {% if pickups %}
+    <div class="card mb-4">
+      {% for p in pickups %}
+        <div class="list-row">
+          <div class="main">
+            <div class="title"><span class="status {{ p.status|status_class }}">{{ p.get_status_display }}</span>{% if p.quantity %} <span class="num">· {{ p.quantity }} ta</span>{% endif %}</div>
+            <div class="meta">
+              {{ p.date|date:"d.m.Y" }} · {% if p.driver %}{{ p.driver }}{% else %}mijoz o'zi olib keldi{% endif %}
+              {% if p.status == "failed" %} · {{ p.get_fail_reason_display }}{% if p.fail_note %}: {{ p.fail_note }}{% endif %}{% endif %}
+              {% if p.note %} · {{ p.note }}{% endif %}
+            </div>
+          </div>
+          {% if p.is_open %}
+            <form class="side" method="post" action="{% url 'customers:pickup_cancel' p.pk %}" data-confirm="Topshiriq bekor qilinsinmi?">
+              {% csrf_token %}
+              <button class="btn btn-light btn-sm" type="submit">Bekor qilish</button>
+            </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="small text-muted-2 mb-4">Hali bo'lmagan.</div>
+    {% endif %}
+
+    <div class="section-title">To'lovlar tarixi</div>
+    <div class="card">
+      {% for p in payments %}
+        <div class="list-row">
+          <div class="main">
+            <div class="title num">{{ p.amount|som }}</div>
+            <div class="meta">{{ p.date|date:"d.m.Y" }} · {{ p.get_method_display }}{% if p.note %} · {{ p.note }}{% endif %}</div>
+          </div>
+          <div class="side small text-muted-2">{{ p.received_by|default:"" }}</div>
+        </div>
+      {% empty %}
+        <div class="empty">Qarz to'lovlari yo'q.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="section-title">Buyurtmalar tarixi</div>
+    <div class="card">
+      {% for order in orders %}{% include "orders/_order_row.html" %}
+      {% empty %}<div class="empty"><i class="bi bi-box-seam"></i>Hali buyurtma yo'q.</div>{% endfor %}
+    </div>
+    {% if summary.total > 30 %}<div class="small mt-2"><a href="{% url 'orders:list' %}?q={{ customer.phone|urlencode }}">Barcha buyurtmalarni ko'rish</a></div>{% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "layouts/boss.html" %}
+{% block title %}{% if is_new %}Yangi mahsulot{% else %}{{ product }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_new %}Yangi mahsulot{% else %}{{ product }} — tahrirlash{% endif %}{% endblock %}
+{% block content %}
+<div class="row"><div class="col-md-7 col-lg-5">
+  <div class="card"><div class="card-body p-4">
+    {% include "partials/form_errors.html" %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% include "partials/field.html" with field=form.name %}
+      {% include "partials/field.html" with field=form.price %}
+      {% include "partials/field.html" with field=form.is_returnable %}
+      {% include "partials/field.html" with field=form.is_active %}
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary" type="submit">Saqlash</button>
+        <a class="btn btn-light" href="{% url 'inventory:product_list' %}">Bekor qilish</a>
+      </div>
+    </form>
+  </div></div>
+</div></div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% comment %}
+  Boshliq panelining karkasi:
+  kompyuterda chapda doimiy menyu, telefonda yuqorida tugma va yon tomondan chiqadigan menyu.
+  Har bir sahifa quyidagi bloklarni to'ldiradi: title, page_title, page_subtitle, page_actions, content.
+{% endcomment %}
+{% block body %}
+<header class="topbar d-lg-none sticky-top">
+  <div class="d-flex align-items-center justify-content-between px-3 py-2">
+    <a class="brand" href="{% url 'reports:dashboard' %}"><span class="brand-mark"><i class="bi bi-droplet-fill"></i></span>{{ SITE_NAME }}</a>
+    <button class="btn btn-light btn-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileMenu" aria-controls="mobileMenu" aria-label="Menyuni ochish">
+      <i class="bi bi-list fs-5"></i>
+    </button>
+  </div>
+</header>
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu" style="--bs-offcanvas-width: 280px;">
+  <div class="offcanvas-header">
+    <span class="brand"><span class="brand-mark"><i class="bi bi-droplet-fill"></i></span>{{ SITE_NAME }}</span>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Yopish"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column p-0">
+    {% include "partials/boss_nav.html" %}
+  </div>
+</div>
+
+<div class="d-flex">
+  <aside class="sidebar d-none d-lg-flex flex-column">
+    <div class="px-3 py-3">
+      <a class="brand" href="{% url 'reports:dashboard' %}"><span class="brand-mark"><i class="bi bi-droplet-fill"></i></span>{{ SITE_NAME }}</a>
+    </div>
+    {% include "partials/boss_nav.html" %}
+  </aside>
+
+  <main class="app-main flex-grow-1">
+    <div class="container-fluid app-container">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+          {% block page_subtitle %}{% endblock %}
+        </div>
+        <div class="page-actions">{% block page_actions %}{% endblock %}</div>
+      </div>
+      {% include "partials/messages.html" %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}

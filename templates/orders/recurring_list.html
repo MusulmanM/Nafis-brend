@@ -1,0 +1,35 @@
+{% extends "layouts/boss.html" %}
+{% block title %}Doimiy buyurtmalar{% endblock %}
+{% block page_title %}Doimiy buyurtmalar{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">Belgilangan kunlarda buyurtma avtomatik yaratiladi</div>{% endblock %}
+{% block page_actions %}
+  <form method="post" action="{% url 'orders:recurring_run' %}">
+    {% csrf_token %}
+    <button class="btn btn-light" type="submit"><i class="bi bi-lightning"></i> Bugungi buyurtmalarni yaratish</button>
+  </form>
+  <a class="btn btn-primary" href="{% url 'orders:recurring_create' %}"><i class="bi bi-plus-lg"></i> Qo'shish</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  {% for r in recurring_orders %}
+    <a class="list-row" href="{% url 'orders:recurring_edit' r.pk %}">
+      <div class="main">
+        <div class="title text-truncate">{{ r.customer.name }}{% if not r.is_active %} <span class="badge text-bg-light border fw-normal">to'xtatilgan</span>{% endif %}</div>
+        <div class="meta">
+          {% for item in r.items.all %}{{ item.product }} × {{ item.quantity }}{% if not forloop.last %}, {% endif %}{% endfor %}
+          · {% if r.driver %}{{ r.driver }}{% else %}yetkazuvchisiz{% endif %}
+        </div>
+      </div>
+      <div class="side small">
+        <div class="fw-medium">{{ r.weekdays_display }}</div>
+      </div>
+    </a>
+  {% empty %}
+    <div class="empty"><i class="bi bi-arrow-repeat"></i>Doimiy buyurtmalar yo'q.</div>
+  {% endfor %}
+</div>
+<p class="small text-muted-2 mt-3">
+  Avtomatik yaratish uchun serverda har kuni ertalab <code>python manage.py create_recurring_orders</code> buyrug'ini ishga tushiring (README.md ga qarang).
+  Buyruq yoki tugma ikki marta ishlatilsa ham, bir kunga takroriy buyurtma yaratilmaydi.
+</p>
+{% endblock %}

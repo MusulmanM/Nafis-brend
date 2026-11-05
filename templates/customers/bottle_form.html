@@ -1,0 +1,45 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% comment %}
+  Ikki rejim:
+    mode == "return" — mijoz butillarni o'zi olib keldi (darhol qabul qilinadi);
+    mode == "pickup" — yetkazuvchiga "butillarni olib kel" topshirig'i.
+{% endcomment %}
+{% block title %}{% if mode == "pickup" %}Butillarni olib kelish{% else %}Butil qabul qilish{% endif %}{% endblock %}
+{% block page_title %}{% if mode == "pickup" %}Butillarni olib kelishga yuborish{% else %}Butil qabul qilish{% endif %}{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle"><a href="{% url 'customers:detail' customer.pk %}">{{ customer.name }}</a> · {{ customer.phone|phone }}</div>{% endblock %}
+{% block content %}
+<div class="row"><div class="col-md-7 col-lg-5">
+  <div class="card mb-3"><div class="card-body stat">
+    <div class="stat-label">Mijozdagi butillar</div>
+    <div class="stat-value">{{ customer.bottles }} <span class="stat-unit">ta</span></div>
+    <div class="stat-note">{{ customer.address }}{% if customer.landmark %} · {{ customer.landmark }}{% endif %}</div>
+  </div></div>
+  <div class="card"><div class="card-body p-4">
+    {% if mode == "pickup" %}
+      <p class="small text-muted-2 mb-3">Topshiriq yetkazuvchining "Buyurtmalarim" sahifasida chiqadi. U butillarni olib kelib "Olib keldim" ni bosganda, mijozdagi butillar soni avtomatik kamayadi.</p>
+    {% else %}
+      <p class="small text-muted-2 mb-3">Mijoz bo'sh butillarni o'zi zavodga olib kelgan bo'lsa. Saqlangach, mijozdagi butillar soni darhol kamayadi.</p>
+    {% endif %}
+    {% include "partials/form_errors.html" %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next_url }}">
+      {{ form.token }}
+      {% if mode == "pickup" %}
+        {% include "partials/field.html" with field=form.driver %}
+        {% include "partials/field.html" with field=form.date %}
+        {% include "partials/field.html" with field=form.note %}
+      {% else %}
+        {% include "partials/field.html" with field=form.quantity %}
+        {% include "partials/field.html" with field=form.date %}
+        {% include "partials/field.html" with field=form.note %}
+      {% endif %}
+      <div class="d-flex gap-2 mt-4">
+        <button class="btn btn-primary" type="submit">{% if mode == "pickup" %}Topshiriq berish{% else %}Saqlash{% endif %}</button>
+        <a class="btn btn-light" href="{{ next_url }}">Bekor qilish</a>
+      </div>
+    </form>
+  </div></div>
+</div></div>
+{% endblock %}

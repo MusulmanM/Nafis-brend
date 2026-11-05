@@ -1,0 +1,26 @@
+{% load formatting %}
+{% comment %}Mahsulotlar va sonlari: [-] 2 [+]. JS (order_form.js) jami summani hisoblaydi.{% endcomment %}
+<div class="card mb-4">
+  {% for product, field in form.product_rows %}
+    <div class="list-row">
+      <div class="main">
+        <div class="title">{{ product.name }}</div>
+        <div class="meta num">{{ product.price|som }}</div>
+        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+      </div>
+      <div class="qty">
+        <button class="btn btn-light" type="button" data-step="-1" data-target="{{ field.id_for_label }}" aria-label="Kamaytirish"><i class="bi bi-dash"></i></button>
+        <input type="number" name="{{ field.html_name }}" id="{{ field.id_for_label }}" value="{{ field.value|default_if_none:0 }}"
+               min="0" max="1000" inputmode="numeric" data-price="{{ product.price }}"
+               class="form-control{% if field.errors %} is-invalid{% endif %}" aria-label="{{ product.name }} soni">
+        <button class="btn btn-light" type="button" data-step="1" data-target="{{ field.id_for_label }}" aria-label="Ko'paytirish"><i class="bi bi-plus"></i></button>
+      </div>
+    </div>
+  {% empty %}
+    <div class="empty">Faol mahsulot yo'q. <a href="{% url 'inventory:product_create' %}">Mahsulot qo'shing</a>.</div>
+  {% endfor %}
+  <div class="list-row">
+    <div class="fw-semibold">Jami</div>
+    <div class="fw-semibold num" id="order-total">0 so'm</div>
+  </div>
+</div>

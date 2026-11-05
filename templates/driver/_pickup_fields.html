@@ -1,0 +1,12 @@
+{% comment %}"Olib keldim" formasi maydonlari (modal va alohida sahifada bir xil).{% endcomment %}
+{% include "partials/form_errors.html" with form=form %}
+<div class="mb-2">
+  <label class="form-label" for="{{ form.quantity.id_for_label }}">{{ form.quantity.label }}</label>
+  <div class="qty qty-lg">
+    <button class="btn btn-light" type="button" data-step="-1" data-target="{{ form.quantity.id_for_label }}" aria-label="Kamaytirish"><i class="bi bi-dash"></i></button>
+    {{ form.quantity }}
+    <button class="btn btn-light" type="button" data-step="1" data-target="{{ form.quantity.id_for_label }}" aria-label="Ko'paytirish"><i class="bi bi-plus"></i></button>
+  </div>
+  {% for error in form.quantity.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+  <div class="form-text">Tizim bo'yicha mijozda {{ form.max_quantity }} ta butil bor.</div>
+</div>

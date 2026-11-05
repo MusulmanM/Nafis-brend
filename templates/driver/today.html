@@ -1,0 +1,43 @@
+{% extends "layouts/driver.html" %}
+{% load formatting %}
+{% block title %}Buyurtmalarim{% endblock %}
+{% block page_title %}Bugungi buyurtmalarim{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">{{ today|date:"j E, l" }} · {{ open_orders|length }} ta buyurtma{% if pickups %}, {{ pickups|length }} ta butil olib kelish{% endif %} qoldi</div>{% endblock %}
+{% block content %}
+{% for order in open_orders %}
+  {% include "driver/_order_card.html" %}
+{% empty %}
+  <div class="card mb-3"><div class="empty"><i class="bi bi-check2-all"></i>Hozircha yetkaziladigan buyurtma yo'q.</div></div>
+{% endfor %}
+
+{% if pickups %}
+  <div class="section-title mt-4">Butillarni olib kelish ({{ pickups|length }})</div>
+  {% for pickup in pickups %}
+    {% include "driver/_pickup_card.html" %}
+  {% endfor %}
+{% endif %}
+
+{% if done or done_pickups %}
+  <div class="section-title mt-4">Bugun yakunlanganlar</div>
+  <div class="card">
+    {% for order in done %}
+      <div class="list-row">
+        <div class="main">
+          <div class="title text-truncate">{{ order.customer.name }} <span class="text-muted-2 small fw-normal">#{{ order.pk }}</span></div>
+          <div class="meta">{% if order.status == "delivered" %}{{ order.get_payment_type_display }} · {{ order.paid_amount|som }}{% else %}{{ order.get_fail_reason_display }}{% endif %}</div>
+        </div>
+        <span class="status {{ order.status|status_class }}">{{ order.get_status_display }}</span>
+      </div>
+    {% endfor %}
+    {% for p in done_pickups %}
+      <div class="list-row">
+        <div class="main">
+          <div class="title text-truncate">{{ p.customer.name }}</div>
+          <div class="meta">Butil olib kelish · {% if p.status == "done" %}{{ p.quantity }} ta{% else %}{{ p.get_fail_reason_display }}{% endif %}</div>
+        </div>
+        <span class="status {{ p.status|status_class }}">{{ p.get_status_display }}</span>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

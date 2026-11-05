@@ -1,0 +1,20 @@
+<nav class="side-nav nav flex-column gap-1 px-2 flex-grow-1">
+  {% for item in boss_menu %}
+    <a class="nav-link{% if item.active %} active{% endif %}" href="{{ item.url }}"{% if item.active %} aria-current="page"{% endif %}>
+      <i class="bi {{ item.icon }}"></i>{{ item.label }}
+    </a>
+  {% endfor %}
+</nav>
+<div class="side-nav border-top px-2 py-3 mt-3">
+  <a class="nav-link" href="{% url 'admin:index' %}"><i class="bi bi-gear"></i>Admin panel</a>
+  <div class="d-flex align-items-center justify-content-between gap-2 px-3 pt-3">
+    <div class="small text-truncate">
+      <div class="fw-medium text-truncate">{{ request.user }}</div>
+      <div class="text-muted-2">Boshliq</div>
+    </div>
+    <form method="post" action="{% url 'accounts:logout' %}">
+      {% csrf_token %}
+      <button class="btn btn-light btn-sm" type="submit" title="Chiqish" aria-label="Chiqish"><i class="bi bi-box-arrow-right"></i></button>
+    </form>
+  </div>
+</div>

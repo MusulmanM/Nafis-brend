@@ -1,0 +1,54 @@
+{% extends "layouts/driver.html" %}
+{% load formatting %}
+{% block title %}Mening kunim{% endblock %}
+{% block page_title %}Mening kunim{% endblock %}
+{% block page_subtitle %}<div class="page-subtitle">{{ today|date:"j E, l" }}</div>{% endblock %}
+{% block content %}
+<div class="card mb-3"><div class="card-body text-center py-4">
+  <div class="stat-label">Kassaga topshiriladigan naqd pul</div>
+  <div class="hero-value">{{ money.cash|som_stat }}</div>
+</div></div>
+
+<div class="row g-3 mb-3">
+  <div class="col-4"><div class="card stat text-center">
+    <div class="stat-label">Yetkazdim</div><div class="stat-value">{{ money.count }}</div>
+  </div></div>
+  <div class="col-4"><div class="card stat text-center">
+    <div class="stat-label">Qoldi</div><div class="stat-value">{{ remaining }}</div>
+  </div></div>
+  <div class="col-4"><div class="card stat text-center">
+    <div class="stat-label">Bo'lmadi</div><div class="stat-value">{{ failed }}</div>
+  </div></div>
+</div>
+
+<div class="section-title">To'lov turlari bo'yicha</div>
+<div class="card mb-3">
+  {% for label, amount in by_type %}
+    <div class="list-row"><span>{{ label }}</span><span class="num fw-medium">{{ amount|som }}</span></div>
+  {% endfor %}
+  <div class="list-row fw-semibold"><span>Jami olingan pul</span><span class="num">{{ money.total|som }}</span></div>
+</div>
+
+<div class="section-title">Butillar</div>
+<div class="card mb-3">
+  <div class="list-row"><span>Berildi (to'la)</span><span class="num">{{ money.bottles_given }} ta</span></div>
+  <div class="list-row"><span>Yetkazishda qaytarib olindi</span><span class="num">{{ money.bottles_returned }} ta</span></div>
+  <div class="list-row"><span>Alohida olib kelindi{% if pickups.done %} ({{ pickups.done }} mijozdan){% endif %}</span><span class="num">{{ pickups.bottles }} ta</span></div>
+  {% if pickups.remaining %}<div class="list-row text-debt"><span>Olib kelish qoldi</span><span class="num">{{ pickups.remaining }} ta mijoz</span></div>{% endif %}
+</div>
+
+{% if delivered_orders %}
+<div class="section-title">Yetkazilganlar</div>
+<div class="card">
+  {% for order in delivered_orders %}
+    <div class="list-row">
+      <div class="main">
+        <div class="title text-truncate">{{ order.customer.name }}</div>
+        <div class="meta">{{ order.delivered_at|date:"H:i" }} · {{ order.get_payment_type_display }}</div>
+      </div>
+      <div class="side num">{{ order.paid_amount|som }}</div>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

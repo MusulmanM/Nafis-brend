@@ -1,0 +1,104 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Buyurtma #{{ order.pk }}{% endblock %}
+{% block page_title %}Buyurtma #{{ order.pk }}{% endblock %}
+{% block page_subtitle %}
+  <div class="page-subtitle d-flex align-items-center gap-2">
+    <span class="status {{ order.status|status_class }}">{{ order.get_status_display }}</span>
+    <span>· {{ order.delivery_date|date:"d.m.Y" }}</span>
+  </div>
+{% endblock %}
+{% block page_actions %}
+  {% if order.is_open %}
+    <a class="btn btn-light" href="{% url 'orders:edit' order.pk %}"><i class="bi bi-pencil"></i> Tahrirlash</a>
+    <form method="post" action="{% url 'orders:cancel' order.pk %}" data-confirm="Buyurtmani bekor qilasizmi?">
+      {% csrf_token %}
+      <button class="btn btn-light text-danger" type="submit"><i class="bi bi-x-lg"></i> Bekor qilish</button>
+    </form>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card mb-4">
+      <div class="table-responsive">
+        <table class="table align-middle">
+          <thead><tr><th>Mahsulot</th><th class="text-end">Soni</th><th class="text-end">Narxi</th><th class="text-end">Summa</th></tr></thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td>{{ item.product }}</td>
+              <td class="text-end num">{{ item.quantity }}</td>
+              <td class="text-end num">{{ item.price|som }}</td>
+              <td class="text-end num">{{ item.line_total|som }}</td>
+            </tr>
+            {% endfor %}
+            <tr><td colspan="3" class="fw-semibold">Jami</td><td class="text-end num fw-semibold">{{ order.total_amount|som }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if order.status == "delivered" %}
+    <div class="section-title">Yetkazish natijasi</div>
+    <div class="card mb-4"><div class="card-body">
+      <dl class="kv">
+        <dt>Yetkazilgan vaqt</dt><dd>{{ order.delivered_at|date:"d.m.Y H:i" }}</dd>
+        <dt>To'lov turi</dt><dd>{{ order.get_payment_type_display }}</dd>
+        <dt>Olingan summa</dt><dd class="num">{{ order.paid_amount|som }}</dd>
+        <dt>Qarzga ta'siri</dt><dd class="num">{% if order.debt_change > 0 %}+{{ order.debt_change|som }} qarz{% elif order.debt_change < 0 %}eski qarzdan {{ order.debt_change|abs|som }} to'landi{% else %}o'zgarmadi{% endif %}</dd>
+        <dt>Butillar</dt><dd>{{ order.bottles_given }} ta berildi, {{ order.returned_bottles }} ta qaytarib olindi</dd>
+      </dl>
+    </div></div>
+    {% elif order.status == "failed" %}
+    <div class="section-title">Yetkazib bo'lmadi</div>
+    <div class="card mb-4"><div class="card-body">
+      <dl class="kv">
+        <dt>Sabab</dt><dd>{{ order.get_fail_reason_display }}</dd>
+        {% if order.fail_note %}<dt>Izoh</dt><dd>{{ order.fail_note }}</dd>{% endif %}
+      </dl>
+    </div></div>
+    {% endif %}
+
+    {% if order.note %}
+    <div class="section-title">Izoh</div>
+    <div class="card mb-4"><div class="card-body">{{ order.note|linebreaksbr }}</div></div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-5">
+    <div class="section-title">Mijoz</div>
+    <div class="card mb-4"><div class="card-body">
+      <div class="fw-medium mb-2"><a href="{% url 'customers:detail' order.customer.pk %}">{{ order.customer.name }}</a></div>
+      <dl class="kv">
+        <dt>Telefon</dt><dd><a href="tel:{{ order.customer.phone }}">{{ order.customer.phone|phone }}</a></dd>
+        <dt>Manzil</dt><dd>{{ order.customer.address }}</dd>
+        {% if order.customer.landmark %}<dt>Mo'ljal</dt><dd>{{ order.customer.landmark }}</dd>{% endif %}
+        <dt>Qarzi</dt><dd class="num{% if order.customer.debt %} text-debt{% endif %}">{{ order.customer.debt|som }}</dd>
+        <dt>Butillari</dt><dd>{{ order.customer.bottles }} ta</dd>
+      </dl>
+    </div></div>
+
+    <div class="section-title">Yetkazuvchi</div>
+    <div class="card mb-4"><div class="card-body">
+      {% if order.is_open %}
+        <form class="d-flex gap-2" method="post" action="{% url 'orders:assign' order.pk %}">
+          {% csrf_token %}
+          <select class="form-select" name="driver" aria-label="Yetkazuvchi">
+            <option value="">— biriktirilmagan —</option>
+            {% for d in drivers %}<option value="{{ d.pk }}"{% if d.pk == order.driver_id %} selected{% endif %}>{{ d }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-primary" type="submit">Biriktirish</button>
+        </form>
+      {% else %}
+        {{ order.driver|default:"—" }}
+      {% endif %}
+    </div></div>
+
+    <div class="small text-muted-2">
+      Yaratildi: {{ order.created_at|date:"d.m.Y H:i" }}{% if order.created_by %} · {{ order.created_by }}{% endif %}
+      {% if order.recurring %}<br>Doimiy buyurtmadan avtomatik yaratilgan{% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "layouts/boss.html" %}
+{% load static %}
+{% block title %}Doimiy buyurtma{% endblock %}
+{% block page_title %}{% if is_new %}Yangi doimiy buyurtma{% else %}{{ recurring.customer.name }} — doimiy buyurtma{% endif %}{% endblock %}
+{% block page_actions %}
+  {% if not is_new %}
+  <form method="post" action="{% url 'orders:recurring_delete' recurring.pk %}" data-confirm="Doimiy buyurtmani o'chirasizmi? Avval yaratilgan buyurtmalar saqlanib qoladi.">
+    {% csrf_token %}
+    <button class="btn btn-light text-danger" type="submit"><i class="bi bi-trash3"></i> O'chirish</button>
+  </form>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<form method="post" novalidate data-qty-form>
+  {% csrf_token %}
+  {% include "partials/form_errors.html" %}
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="section-title">Mijoz va kunlar</div>
+      <div class="card mb-4"><div class="card-body p-4">
+        {% if is_new %}
+          {% include "partials/field.html" with field=form.phone %}
+        {% else %}
+          <div class="mb-3"><a href="{% url 'customers:detail' recurring.customer.pk %}">{{ recurring.customer.name }}</a> · {{ recurring.customer.address }}</div>
+        {% endif %}
+        <div class="form-label">{{ form.weekdays.label }} <span class="text-danger">*</span></div>
+        <div class="d-flex flex-wrap gap-2 mb-1">
+          {% for box in form.weekdays %}
+            <input type="checkbox" class="btn-check" name="{{ box.data.name }}" id="{{ box.id_for_label }}" value="{{ box.data.value }}"{% if box.data.selected %} checked{% endif %}>
+            <label class="btn btn-light" for="{{ box.id_for_label }}">{{ box.choice_label }}</label>
+          {% endfor %}
+        </div>
+        {% for error in form.weekdays.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+      </div></div>
+
+      <div class="section-title">Mahsulotlar (har safar)</div>
+      {% include "orders/_product_qty.html" %}
+    </div>
+    <div class="col-lg-5">
+      <div class="section-title">Yetkazish</div>
+      <div class="card mb-4"><div class="card-body p-4">
+        {% include "partials/field.html" with field=form.driver %}
+        {% include "partials/field.html" with field=form.note %}
+        {% include "partials/field.html" with field=form.is_active %}
+      </div></div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary flex-grow-1 py-2" type="submit">Saqlash</button>
+        <a class="btn btn-light py-2" href="{% url 'orders:recurring_list' %}">Bekor qilish</a>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/order_form.js' %}"></script>{% endblock %}

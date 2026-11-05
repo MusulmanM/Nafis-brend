@@ -1,0 +1,25 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Yetkazuvchilar{% endblock %}
+{% block page_title %}Yetkazuvchilar{% endblock %}
+{% block page_actions %}
+  <a class="btn btn-primary" href="{% url 'accounts:driver_create' %}"><i class="bi bi-plus-lg"></i> Yetkazuvchi qo'shish</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+  {% for driver in drivers %}
+    <a class="list-row" href="{% url 'accounts:driver_detail' driver.pk %}">
+      <div class="main">
+        <div class="title">{{ driver }}{% if not driver.is_active %} <span class="badge text-bg-light border fw-normal">bloklangan</span>{% endif %}</div>
+        <div class="meta">{{ driver.phone|phone }} · login: {{ driver.username }}</div>
+      </div>
+      <div class="side small">
+        <div><span class="text-muted-2">Bugun:</span> <span class="num fw-medium">{{ driver.today_delivered }} / {{ driver.today_total }}</span></div>
+        {% if driver.today_pending %}<div class="text-muted-2">{{ driver.today_pending }} ta kutilmoqda</div>{% endif %}
+      </div>
+    </a>
+  {% empty %}
+    <div class="empty"><i class="bi bi-truck"></i>Hali yetkazuvchi qo'shilmagan.</div>
+  {% endfor %}
+</div>
+{% endblock %}

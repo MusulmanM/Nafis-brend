@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% comment %}
+  Yetkazuvchi paneli karkasi (telefon uchun): yuqorida ism, pastda ikkita katta tugmali menyu.
+{% endcomment %}
+{% block body %}
+<header class="topbar sticky-top">
+  <div class="driver-container d-flex align-items-center justify-content-between py-2">
+    <span class="brand"><span class="brand-mark"><i class="bi bi-droplet-fill"></i></span>{{ SITE_NAME }}</span>
+    <div class="d-flex align-items-center gap-2">
+      <span class="small text-muted-2 text-truncate" style="max-width: 140px">{{ request.user }}</span>
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button class="btn btn-light btn-sm" type="submit" aria-label="Chiqish" title="Chiqish"><i class="bi bi-box-arrow-right"></i></button>
+      </form>
+    </div>
+  </div>
+</header>
+
+<main class="driver-container driver-main">
+  <div class="page-header mb-3">
+    <div>
+      <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+      {% block page_subtitle %}{% endblock %}
+    </div>
+  </div>
+  {% include "partials/messages.html" %}
+  {% block content %}{% endblock %}
+</main>
+
+{% with view=request.resolver_match.url_name %}
+<nav class="bottom-nav">
+  <a class="{% if view == 'today' or view == 'deliver' or view == 'fail' or view == 'pickup_done' or view == 'pickup_fail' %}active{% endif %}" href="{% url 'driver:today' %}">
+    <i class="bi bi-list-check"></i>
+    <span>Buyurtmalar{% if driver_remaining %} <span class="badge rounded-pill text-bg-primary">{{ driver_remaining }}</span>{% endif %}</span>
+  </a>
+  <a class="{% if view == 'my_day' %}active{% endif %}" href="{% url 'driver:my_day' %}">
+    <i class="bi bi-wallet2"></i><span>Mening kunim</span>
+  </a>
+</nav>
+{% endwith %}
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/driver.js' %}"></script>{% endblock %}

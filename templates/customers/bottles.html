@@ -1,0 +1,87 @@
+{% extends "layouts/boss.html" %}
+{% load formatting %}
+{% block title %}Butillar{% endblock %}
+{% block page_title %}Butil (tara) hisobi{% endblock %}
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="card stat">
+    <div class="stat-label">Mijozlardagi butillar</div>
+    <div class="stat-value">{{ totals.at_customers|num }}</div>
+    <div class="stat-note">{{ totals.customers }} ta mijozda</div>
+  </div></div>
+  <div class="col-6 col-md-3"><a class="stat-link" href="?idle=14"><div class="card stat">
+    <div class="stat-label">Qolib ketgan</div>
+    <div class="stat-value{% if totals.stale.bottles %} text-debt{% endif %}">{{ totals.stale.bottles|num }}</div>
+    <div class="stat-note">2 haftadan beri buyurtma bermagan {{ totals.stale.count }} ta mijozda</div>
+  </div></a></div>
+  <div class="col-6 col-md-3"><div class="card stat">
+    <div class="stat-label">Jami tarqatilgan</div>
+    <div class="stat-value">{{ totals.given|num }}</div>
+  </div></div>
+  <div class="col-6 col-md-3"><div class="card stat">
+    <div class="stat-label">Jami qaytarilgan</div>
+    <div class="stat-value">{{ totals.returned|num }}</div>
+    <div class="stat-note">shundan {{ totals.picked|num }} tasi alohida olib kelingan</div>
+  </div></div>
+</div>
+
+{% if open_pickups %}
+<div class="section-title">Olib kelish topshiriqlari ({{ open_pickups|length }})</div>
+<div class="card mb-4">
+  {% for p in open_pickups %}
+    <div class="list-row">
+      <div class="main">
+        <div class="title text-truncate"><a class="text-reset" href="{% url 'customers:detail' p.customer_id %}">{{ p.customer.name }}</a></div>
+        <div class="meta">
+          {{ p.driver|default:"yetkazuvchi yo'q" }} ·
+          {% if p.date < today %}<span class="text-danger">kechikkan ({{ p.date|date:"d.m.Y" }})</span>{% elif p.date == today %}bugun{% else %}{{ p.date|date:"d.m.Y" }}{% endif %}
+          · mijozda {{ p.customer.bottles }} ta{% if p.note %} · {{ p.note }}{% endif %}
+        </div>
+      </div>
+      <form class="side" method="post" action="{% url 'customers:pickup_cancel' p.pk %}" data-confirm="{{ p.customer.name }}: topshiriq bekor qilinsinmi?">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn btn-light btn-sm" type="submit">Bekor qilish</button>
+      </form>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="d-flex flex-wrap gap-2 mb-3">
+  {% for value, label in idle_filters %}
+    <a class="chip{% if idle == value %} active{% endif %}" href="?{% if value %}idle={{ value }}{% endif %}{% if q %}{% if value %}&{% endif %}q={{ q|urlencode }}{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<form class="d-flex gap-2 mb-3" method="get">
+  {% if idle %}<input type="hidden" name="idle" value="{{ idle }}">{% endif %}
+  <input class="form-control" style="max-width: 320px" type="search" name="q" value="{{ q }}" placeholder="Ism, telefon yoki manzil">
+  <button class="btn btn-light" type="submit" aria-label="Qidirish"><i class="bi bi-search"></i></button>
+</form>
+
+<div class="card">
+  {% for c in page_obj %}
+    <div class="list-row">
+      <div class="main">
+        <div class="title text-truncate"><a class="text-reset" href="{% url 'customers:detail' c.pk %}">{{ c.name }}</a></div>
+        <div class="meta">{{ c.phone|phone }} · {{ c.address }}</div>
+        <div class="meta">
+          {% if c.last_delivery %}oxirgi yetkazish: {{ c.last_delivery|date:"d.m.Y" }} ({{ c.last_delivery|days_ago }}){% else %}hali yetkazilmagan{% endif %}
+          {% for p in c.open_pickups %} · <span class="status status-planned">{{ p.driver|default:"" }} olib keladi, {{ p.date|date:"d.m" }}</span>{% endfor %}
+        </div>
+      </div>
+      <div class="side d-flex align-items-center gap-3">
+        <div><span class="num fw-medium">{{ c.bottles }}</span> <span class="text-muted-2 small">ta</span></div>
+        {% if not c.open_pickups %}
+          <a class="btn btn-light btn-sm" href="{% url 'customers:pickup_create' c.pk %}?next={{ request.get_full_path|urlencode }}" title="Yetkazuvchiga topshiriq berish"><i class="bi bi-truck"></i><span class="d-none d-md-inline"> Olib kelish</span></a>
+        {% endif %}
+        <a class="btn btn-light btn-sm" href="{% url 'customers:bottle_return' c.pk %}?next={{ request.get_full_path|urlencode }}" title="Mijoz o'zi olib keldi"><i class="bi bi-box-arrow-in-down"></i><span class="d-none d-md-inline"> Qabul qilish</span></a>
+      </div>
+    </div>
+  {% empty %}
+    <div class="empty"><i class="bi bi-droplet"></i>{% if idle or q %}Bunday mijoz topilmadi.{% else %}Hech bir mijozda butil yo'q.{% endif %}</div>
+  {% endfor %}
+</div>
+{% include "partials/pagination.html" %}
+{% endblock %}

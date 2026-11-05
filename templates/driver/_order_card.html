@@ -1,0 +1,80 @@
+{% load formatting %}
+<div class="card driver-card mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <span class="status {{ order.status|status_class }}">{{ order.get_status_display }}</span>
+      <span class="small text-muted-2">#{{ order.pk }}{% if order.delivery_date < today %} · <span class="text-danger">kechikkan ({{ order.delivery_date|date:"d.m" }})</span>{% endif %}</span>
+    </div>
+
+    <div class="fs-5 fw-semibold mb-2">{{ order.customer.name }}</div>
+    <a class="btn btn-light w-100 btn-big mb-2" href="tel:{{ order.customer.phone }}"><i class="bi bi-telephone"></i> {{ order.customer.phone|phone }}</a>
+    {% if order.customer.phone2 %}<a class="btn btn-light w-100 mb-2" href="tel:{{ order.customer.phone2 }}"><i class="bi bi-telephone"></i> {{ order.customer.phone2|phone }}</a>{% endif %}
+
+    <div class="mb-1"><i class="bi bi-geo-alt text-muted-2"></i> {{ order.customer.address }}</div>
+    {% if order.customer.landmark %}<div class="small text-muted-2 mb-2">Mo'ljal: {{ order.customer.landmark }}</div>{% endif %}
+    <div class="d-flex gap-2 mb-3">
+      <a class="btn btn-light btn-sm flex-fill" href="{{ order.customer.yandex_maps_url }}" target="_blank" rel="noopener"><i class="bi bi-map"></i> Yandex xarita</a>
+      <a class="btn btn-light btn-sm flex-fill" href="{{ order.customer.google_maps_url }}" target="_blank" rel="noopener"><i class="bi bi-map"></i> Google xarita</a>
+    </div>
+
+    <div class="border-top pt-2">
+      {% for item in order.items.all %}
+        <div class="d-flex justify-content-between"><span>{{ item.product }} × {{ item.quantity }}</span><span class="num">{{ item.line_total|som }}</span></div>
+      {% endfor %}
+      <div class="d-flex justify-content-between fw-semibold mt-1"><span>Jami</span><span class="num">{{ order.total_amount|som }}</span></div>
+      {% if order.customer.debt %}<div class="d-flex justify-content-between text-debt small"><span>Eski qarzi</span><span class="num">{{ order.customer.debt|som }}</span></div>{% endif %}
+      <div class="d-flex justify-content-between small text-muted-2"><span>Mijozdagi butillar</span><span>{{ order.customer.bottles }} ta</span></div>
+    </div>
+    {% if order.note %}<div class="note mt-2"><i class="bi bi-chat-left-text"></i> {{ order.note }}</div>{% endif %}
+    {% if order.customer.note %}<div class="note mt-2"><i class="bi bi-info-circle"></i> {{ order.customer.note }}</div>{% endif %}
+
+    <div class="d-grid gap-2 mt-3">
+      {% if order.status == "new" %}
+        <form method="post" action="{% url 'driver:start' order.pk %}" class="d-grid">
+          {% csrf_token %}
+          <button class="btn btn-primary btn-big" type="submit"><i class="bi bi-truck"></i> Yo'lga chiqdim</button>
+        </form>
+      {% endif %}
+      <button class="btn {% if order.status == 'on_way' %}btn-success{% else %}btn-outline-success{% endif %} btn-big" type="button" data-bs-toggle="modal" data-bs-target="#deliver-{{ order.pk }}">
+        <i class="bi bi-check2-circle"></i> Yetkazib berdim
+      </button>
+      <button class="btn btn-light btn-big text-danger" type="button" data-bs-toggle="modal" data-bs-target="#fail-{{ order.pk }}">
+        <i class="bi bi-x-circle"></i> Yetkazib bo'lmadi
+      </button>
+    </div>
+  </div>
+</div>
+
+{# "Yetkazib berdim" oynasi #}
+<div class="modal fade" id="deliver-{{ order.pk }}" tabindex="-1" aria-labelledby="deliver-title-{{ order.pk }}" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+    <form class="modal-content" method="post" action="{% url 'driver:deliver' order.pk %}" data-delivery-form>
+      {% csrf_token %}
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="deliver-title-{{ order.pk }}">Yetkazib berdim · {{ order.customer.name }}</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+      </div>
+      <div class="modal-body">{% include "driver/_deliver_fields.html" with form=order.deliver_form %}</div>
+      <div class="modal-footer">
+        <button class="btn btn-success btn-big w-100" type="submit">Tasdiqlash</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{# "Yetkazib bo'lmadi" oynasi #}
+<div class="modal fade" id="fail-{{ order.pk }}" tabindex="-1" aria-labelledby="fail-title-{{ order.pk }}" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+    <form class="modal-content" method="post" action="{% url 'driver:fail' order.pk %}">
+      {% csrf_token %}
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="fail-title-{{ order.pk }}">Yetkazib bo'lmadi · {{ order.customer.name }}</h2>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Yopish"></button>
+      </div>
+      <div class="modal-body">{% include "driver/_fail_fields.html" with form=order.fail_form %}</div>
+      <div class="modal-footer">
+        <button class="btn btn-danger btn-big w-100" type="submit">Saqlash</button>
+      </div>
+    </form>
+  </div>
+</div>

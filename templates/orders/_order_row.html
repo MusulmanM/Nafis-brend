@@ -1,0 +1,15 @@
+{% load formatting %}
+<a class="list-row" href="{% url 'orders:detail' order.pk %}">
+  <div class="main">
+    <div class="title text-truncate">{{ order.customer.name }} <span class="text-muted-2 fw-normal small">#{{ order.pk }}</span></div>
+    <div class="meta">
+      {{ order.delivery_date|date:"d.m.Y" }}
+      {% if not hide_driver %} · {% if order.driver %}{{ order.driver }}{% else %}<span class="text-danger">yetkazuvchisiz</span>{% endif %}{% endif %}
+      · {{ order.customer.address }}
+    </div>
+  </div>
+  <div class="side">
+    <div class="num fw-medium">{{ order.total_amount|som }}</div>
+    <span class="status {{ order.status|status_class }}">{{ order.get_status_display }}</span>
+  </div>
+</a>

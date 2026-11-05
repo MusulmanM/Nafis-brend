@@ -1,0 +1,64 @@
+{% extends "layouts/boss.html" %}
+{% load static formatting %}
+{% block title %}{% if is_new %}Yangi buyurtma{% else %}Buyurtma #{{ order.pk }}{% endif %}{% endblock %}
+{% block page_title %}{% if is_new %}Yangi buyurtma{% else %}Buyurtma #{{ order.pk }} — tahrirlash{% endif %}{% endblock %}
+{% block content %}
+<form id="order-form" method="post" novalidate data-qty-form data-lookup-url="{% url 'customers:lookup' %}">
+  {% csrf_token %}
+  {{ form.token }}
+  {% include "partials/form_errors.html" %}
+  <div class="row g-4">
+    <div class="col-lg-7">
+
+      <div class="section-title">Mijoz</div>
+      <div class="card mb-4"><div class="card-body p-4">
+        {% if is_new %}
+          {% include "partials/field.html" with field=form.phone %}
+        {% endif %}
+
+        {# Topilgan mijoz kartasi (JS telefon yozilganda to'ldiradi) #}
+        <div id="found-customer" class="{% if not found_customer %}d-none{% endif %}">
+          <div class="border rounded-3 p-3">
+            <div class="d-flex justify-content-between gap-2">
+              <a class="fw-medium" data-field="name" data-link href="{% if found_customer %}{% url 'customers:detail' found_customer.pk %}{% endif %}" target="_blank">{{ found_customer.name }}</a>
+              <span class="small text-muted-2"><span data-field="bottles">{{ found_customer.bottles }}</span> ta butil</span>
+            </div>
+            <div class="small text-muted-2" data-field="address">{{ found_customer.address }}</div>
+            <div class="small mt-1">Qarzi: <span class="num" data-field="debt_display">{{ found_customer.debt|som }}</span></div>
+          </div>
+        </div>
+
+        {% if is_new %}
+        {# Yangi mijoz maydonlari: telefon bo'yicha mijoz topilmasa ko'rinadi #}
+        <div id="new-customer" class="{% if not show_new_customer %}d-none{% endif %}">
+          <div class="small text-muted-2 mb-3"><i class="bi bi-person-plus"></i> Bu raqamli mijoz yo'q — yangi mijoz qo'shiladi.</div>
+          {% include "partials/field.html" with field=form.name %}
+          {% include "partials/field.html" with field=form.address %}
+          <div class="row">
+            <div class="col-sm-7">{% include "partials/field.html" with field=form.landmark %}</div>
+            <div class="col-sm-5">{% include "partials/field.html" with field=form.customer_type %}</div>
+          </div>
+        </div>
+        {% endif %}
+      </div></div>
+
+      <div class="section-title">Mahsulotlar</div>
+      {% include "orders/_product_qty.html" %}
+    </div>
+
+    <div class="col-lg-5">
+      <div class="section-title">Yetkazish</div>
+      <div class="card mb-4"><div class="card-body p-4">
+        {% include "partials/field.html" with field=form.delivery_date %}
+        {% include "partials/field.html" with field=form.driver %}
+        {% include "partials/field.html" with field=form.note %}
+      </div></div>
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary flex-grow-1 py-2" type="submit">{% if is_new %}Buyurtmani saqlash{% else %}Saqlash{% endif %}</button>
+        <a class="btn btn-light py-2" href="{% if is_new %}{% url 'orders:list' %}{% else %}{% url 'orders:detail' order.pk %}{% endif %}">Bekor qilish</a>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/order_form.js' %}"></script>{% endblock %}
